@@ -13,4 +13,12 @@ namespace LearnAspNetCore.Data
 		{
 		}
 	}
+
+	public class RepoDbContext : DbContext
+	{
+		public RepoDbContext(DbContextOptions<RepoDbContext> options)
+			: base(options)
+		{
+		}
+	}
 }

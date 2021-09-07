@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +11,11 @@ using LearnAspNetCore.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Polly;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using LearnAspNetCore.Repositories;
+using LearnAspNetCore.Services;
 
 namespace LearnAspNetCore
 {
@@ -30,10 +34,30 @@ namespace LearnAspNetCore
 			services.AddDbContext<ApplicationDbContext>(options =>
 				options.UseSqlite(
 					Configuration.GetConnectionString("DefaultConnection")));
+			services.AddDbContextPool<RepoDbContext>(options =>
+				options.UseSqlite(
+					Configuration.GetConnectionString("DefaultConnection")));
+
 			services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			services.AddControllersWithViews();
 			services.AddRazorPages();
+
+			services.SetupHttpClients();
+
+			// Versioning
+			services.AddApiVersioning(config =>
+			{
+				config.AssumeDefaultVersionWhenUnspecified = true;
+				config.DefaultApiVersion = ApiVersion.Default;
+				config.ApiVersionReader = new HeaderApiVersionReader("X-Version");
+				config.ReportApiVersions = true;
+			});
+
+			services.AddScoped<IFakeRepository, FakeRepository>();
+			services.AddSingleton<IPricingService, PricingService>();
+			services.AddSingleton<IPricingApiService, PricingApiService>();
+			services.AddSingleton<IProductService, ProductService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

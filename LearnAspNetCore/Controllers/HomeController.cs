@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using LearnAspNetCore.Models;
+using System.Net.Http;
 
 namespace LearnAspNetCore.Controllers
 {
@@ -26,6 +27,13 @@ namespace LearnAspNetCore.Controllers
 		public IActionResult Privacy()
 		{
 			return View();
+		}
+
+		public async Task<string> LoadAccount([FromServices] IHttpClientFactory clientFactory)
+		{
+			var http = clientFactory.CreateClient("github");
+
+			return await http.GetStringAsync($"users/viktor-zuiev");
 		}
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
